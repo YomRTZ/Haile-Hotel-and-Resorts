@@ -45,13 +45,13 @@ const VoiceControls = ({
 
         if (parsed.isCommand) {
             VoiceCommands.executeCommand(parsed.action, onCommand);
-            onSuccess();
             setShowSuggestionsList(false);
-        } else if (autoSend && onTranscript) {
+        } else if (onTranscript) {
+            // Always forward the transcript — parent decides whether to auto-send
             onTranscript(transcript);
-            onSuccess();
         }
-    }, [transcript, onTranscript, onCommand, autoSend, onSuccess]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [transcript]);
 
     // Show suggestions while user is speaking (interim)
     useEffect(() => {
