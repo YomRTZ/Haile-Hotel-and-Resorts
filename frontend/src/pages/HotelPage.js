@@ -95,6 +95,14 @@ function Navbar({ onChatOpen }) {
         return () => window.removeEventListener('scroll', onScroll);
     }, []);
 
+    // Close menu on route change or outside click
+    useEffect(() => {
+        if (!menuOpen) return;
+        const close = () => setMenuOpen(false);
+        document.addEventListener('click', close);
+        return () => document.removeEventListener('click', close);
+    }, [menuOpen]);
+
     const scrollTo = (id) => {
         document.getElementById(id.toLowerCase())?.scrollIntoView({ behavior: 'smooth' });
         setMenuOpen(false);
@@ -103,11 +111,13 @@ function Navbar({ onChatOpen }) {
     return (
         <nav className={`hp-nav ${scrolled ? 'hp-nav--scrolled' : ''}`} role="navigation">
             <div className="hp-nav__inner">
+                {/* Brand */}
                 <a href="#hero" className="hp-nav__brand">
-                    <span>🏨</span> Haile Resort Hawassa
+                    <span>🏨</span> Haile Resort
                 </a>
 
-                <ul className={`hp-nav__links ${menuOpen ? 'open' : ''}`}>
+                {/* Desktop nav links */}
+                <ul className="hp-nav__links">
                     {NAV_LINKS.map((l) => (
                         <li key={l}>
                             <button onClick={() => scrollTo(l)}>{l}</button>
@@ -115,6 +125,7 @@ function Navbar({ onChatOpen }) {
                     ))}
                 </ul>
 
+                {/* Desktop actions */}
                 <div className="hp-nav__actions">
                     <button className="hp-nav__chat-btn" onClick={onChatOpen} aria-label="Open AI concierge">
                         💬 Concierge
@@ -138,14 +149,84 @@ function Navbar({ onChatOpen }) {
                     )}
                 </div>
 
+                {/* Hamburger */}
                 <button
                     className="hp-nav__hamburger"
-                    onClick={() => setMenuOpen((p) => !p)}
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen((p) => !p); }}
                     aria-label="Toggle menu"
+                    aria-expanded={menuOpen}
                 >
                     {menuOpen ? '✕' : '☰'}
                 </button>
             </div>
+
+            {/* Mobile dropdown */}
+            {menuOpen && (
+                <div className="hp-nav__mobile-menu" onClick={(e) => e.stopPropagation()}>
+                    {/* Nav links */}
+                    <ul className="hp-nav__mobile-links">
+                        {NAV_LINKS.map((l) => (
+                            <li key={l}>
+                                <button onClick={() => scrollTo(l)}>{l}</button>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div className="hp-nav__mobile-divider" />
+
+                    {/* Action buttons */}
+                    <div className="hp-nav__mobile-actions">
+                        <button
+                            className="hp-nav__mobile-concierge"
+                            onClick={() => { onChatOpen(); setMenuOpen(false); }}
+                        >
+                            💬 Concierge
+                        </button>
+                        <Link
+                            to="/admin"
+                            className="hp-nav__mobile-admin"
+                            onClick={() => setMenuOpen(false)}
+                        >
+                            ⚙️ Admin
+                        </Link>
+                    </div>
+
+                    <div className="hp-nav__mobile-divider" />
+
+                    {/* Auth */}
+                    {user ? (
+                        <div className="hp-nav__mobile-user">
+                            <div className="hp-nav__mobile-user-info">
+                                <span className="hp-nav__avatar">{user.name[0].toUpperCase()}</span>
+                                <span>{user.name}</span>
+                            </div>
+                            <button
+                                className="hp-nav__mobile-signout"
+                                onClick={() => { logout(); navigate('/'); setMenuOpen(false); }}
+                            >
+                                Sign out
+                            </button>
+                        </div>
+                    ) : (
+                        <div className="hp-nav__mobile-auth">
+                            <Link
+                                to="/signin"
+                                className="hp-nav__mobile-signin"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Sign in
+                            </Link>
+                            <Link
+                                to="/signup"
+                                className="hp-nav__mobile-signup"
+                                onClick={() => setMenuOpen(false)}
+                            >
+                                Book now
+                            </Link>
+                        </div>
+                    )}
+                </div>
+            )}
         </nav>
     );
 }
