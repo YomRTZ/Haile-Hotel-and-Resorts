@@ -10,6 +10,9 @@ dotenv.config();
 
 const app = express();
 
+// Trust Render/Netlify/proxy X-Forwarded-For headers (required for rate limiting)
+app.set('trust proxy', 1);
+
 // Connect to MongoDB
 connectDB();
 
