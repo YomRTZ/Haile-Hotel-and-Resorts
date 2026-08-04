@@ -98,7 +98,7 @@ jobs:
 
     environment:
       name: production
-      url: ${{ secrets.RENDER_BACKEND_URL }}
+      url: https://haile-hotel-and-resorts.onrender.com
 
     steps:
       - name: Trigger Render deploy hook
@@ -118,7 +118,7 @@ jobs:
 
     environment:
       name: production
-      url: ${{ secrets.NETLIFY_SITE_URL }}
+      url: https://haileresort.netlify.app
 
     steps:
       - uses: actions/checkout@v4
