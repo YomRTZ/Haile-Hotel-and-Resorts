@@ -10,7 +10,7 @@ class VoiceService {
         this.isListening = false;
         this.isSpeaking = false;
         this.voicesLoaded = false;
-        this.synthesis = window.speechSynthesis;
+        this.synthesis = typeof window !== 'undefined' ? window.speechSynthesis : null;
         this.availableVoices = [];
         
         // Load voices when available
@@ -64,7 +64,8 @@ class VoiceService {
         this.recognition.continuous = false;
         this.recognition.interimResults = true;
         this.recognition.maxAlternatives = 1;
-        this.recognition.grammars = this.getGrammar();
+        const grammar = this.getGrammar();
+        if (grammar) this.recognition.grammars = grammar;
 
         // Handle results
         this.recognition.onresult = (event) => {
@@ -280,16 +281,18 @@ class VoiceService {
     // GET GRAMMAR FOR BETTER RECOGNITION
     // ============================================
     getGrammar() {
-        // Optional: Add custom grammar for better recognition
-        const grammar = `
-            #JSGF V1.0;
-            grammar hotel;
-            public <question> = 
-                (what | when | where | how | do | is | are | can | will) 
-                (is | are | can | will | do | does) 
-                *;
-        `;
-        return grammar;
+        // SpeechGrammarList is not widely supported — return null safely
+        try {
+            const SpeechGrammarList = window.SpeechGrammarList || window.webkitSpeechGrammarList;
+            if (!SpeechGrammarList) return null;
+
+            const grammar = `#JSGF V1.0; grammar hotel; public <question> = what | when | where | how | do | is | are | can | will | tell | show | book | reserve;`;
+            const grammarList = new SpeechGrammarList();
+            grammarList.addFromString(grammar, 1);
+            return grammarList;
+        } catch {
+            return null;
+        }
     }
 
     // ============================================
