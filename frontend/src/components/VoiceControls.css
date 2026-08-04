@@ -1,0 +1,232 @@
+/* ─── Voice Controls ─────────────────────────────────────────────────────── */
+
+.voice-controls-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 500px;
+}
+
+.voice-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─── Main mic button ────────────────────────────────────────────────────── */
+.voice-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: 1.5px solid #e2e8f0;
+    background: #f8fafc;
+    cursor: pointer;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.voice-btn:hover:not(:disabled) {
+    background: #1a6faf;
+    border-color: #1a6faf;
+    transform: scale(1.05);
+}
+
+.voice-btn.listening {
+    background: #fee2e2;
+    border-color: #ef4444;
+    animation: vcPulse 1.2s ease infinite;
+}
+
+.voice-btn.speaking {
+    background: #eff6ff;
+    border-color: #1a6faf;
+}
+
+.voice-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+@keyframes vcPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,.3); }
+    50%       { box-shadow: 0 0 0 6px rgba(239,68,68,0); }
+}
+
+/* ─── Speaking indicator ─────────────────────────────────────────────────── */
+.speaking-indicator {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: #1a6faf;
+    font-weight: 500;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    padding: 4px 10px;
+}
+
+.stop-speaking-btn {
+    background: none;
+    border: none;
+    color: #1a6faf;
+    font-size: 15px;
+    cursor: pointer;
+    padding: 0 2px;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+.stop-speaking-btn:hover { opacity: 1; }
+
+/* ─── Interim transcript ─────────────────────────────────────────────────── */
+.interim-text {
+    position: relative;
+    flex: 1;
+    min-width: 120px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 13px;
+    color: #374151;
+}
+
+.interim-label { font-size: 12px; flex-shrink: 0; }
+.interim-content { flex: 1; font-style: italic; color: #637281; }
+.cursor-blink {
+    animation: cwBlink 1s step-end infinite;
+    color: #1a6faf;
+    font-weight: 700;
+}
+@keyframes cwBlink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+
+/* ─── Suggestions dropdown ───────────────────────────────────────────────── */
+.suggestions-dropdown {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.14);
+    padding: 6px 0;
+    z-index: 1000;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+}
+
+.suggestion-item {
+    padding: 8px 14px;
+    cursor: pointer;
+    font-size: 13px;
+    color: #374151;
+    transition: background 0.15s;
+}
+.suggestion-item:hover { background: #eff6ff; color: #1a6faf; }
+
+/* ─── Volume indicator ───────────────────────────────────────────────────── */
+.volume-indicator {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 4px 8px;
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.volume-label { font-size: 12px; }
+
+.volume-bar {
+    width: 56px;
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.volume-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #16a34a);
+    border-radius: 2px;
+    transition: width 0.08s ease;
+}
+
+/* ─── Error ──────────────────────────────────────────────────────────────── */
+.voice-error {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 5px 10px;
+}
+
+.error-icon { font-size: 13px; }
+.error-message { flex: 1; }
+
+.error-close {
+    background: none;
+    border: none;
+    color: #b91c1c;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+    line-height: 1;
+}
+.error-close:hover { opacity: 1; }
+
+/* ─── Idle status ────────────────────────────────────────────────────────── */
+.voice-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #22c55e;
+    flex-shrink: 0;
+}
+
+.status-text { font-size: 12px; }
+
+/* ─── Not-supported state ────────────────────────────────────────────────── */
+.voice-not-supported {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #94a3b8;
+    opacity: 0.7;
+}
+
+/* ─── Waveform container ─────────────────────────────────────────────────── */
+.waveform-container {
+    padding: 4px;
+    background: rgba(0,0,0,.08);
+    border-radius: 8px;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .volume-bar { width: 36px; }
+    .suggestions-dropdown { max-height: 140px; }
+}

@@ -1,0 +1,7 @@
+.voice-waveform {
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: 60px;
+    display: block;
+}

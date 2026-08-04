@@ -1,0 +1,473 @@
+/* ─── Floating Action Button ─────────────────────────────────────────────── */
+.cw-fab {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    z-index: 1000;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a6faf 0%, #0d4f82 100%);
+    color: #fff;
+    font-size: 1.5rem;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 8px 32px rgba(26, 111, 175, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    overflow: visible;
+}
+
+.cw-fab:hover {
+    transform: scale(1.08) translateY(-2px);
+    box-shadow: 0 14px 40px rgba(26, 111, 175, 0.55);
+}
+
+.cw-fab--open {
+    background: linear-gradient(135deg, #374151, #1f2d3d);
+    font-size: 1.2rem;
+}
+
+/* Ripple pulse */
+.cw-fab__ripple {
+    position: absolute;
+    inset: -4px;
+    border-radius: 50%;
+    border: 2px solid rgba(26, 111, 175, 0.45);
+    animation: cwRipple 2.2s ease-out infinite;
+    pointer-events: none;
+}
+
+@keyframes cwRipple {
+    0%   { transform: scale(1);   opacity: .7; }
+    100% { transform: scale(1.5); opacity: 0;  }
+}
+
+/* Unread badge */
+.cw-fab__badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    border: 2px solid #fff;
+    animation: cwBadgePop .25s ease;
+}
+
+@keyframes cwBadgePop {
+    from { transform: scale(0); }
+    to   { transform: scale(1); }
+}
+
+/* ─── Chat panel ─────────────────────────────────────────────────────────── */
+.cw-panel {
+    position: fixed;
+    bottom: 6rem;
+    right: 2rem;
+    z-index: 999;
+    width: 400px;
+    max-height: 640px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(0.92) translateY(20px);
+    opacity: 0;
+    pointer-events: none;
+    transform-origin: bottom right;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.25s ease;
+}
+
+.cw-panel--open {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+    pointer-events: all;
+}
+
+/* ─── Header ─────────────────────────────────────────────────────────────── */
+.cw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(135deg, #0d1b2e 0%, #1a3a5c 100%);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.cw-header__left {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+}
+
+.cw-header__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.12);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.cw-header__left strong {
+    font-size: .93rem;
+    font-weight: 700;
+    display: block;
+}
+
+.cw-header__left span {
+    font-size: .75rem;
+    opacity: .75;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+    margin-top: .1rem;
+}
+
+.cw-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #22c55e;
+    display: inline-block;
+    animation: cwPulse 2s infinite;
+}
+
+@keyframes cwPulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+}
+
+.cw-header__actions {
+    display: flex;
+    gap: .3rem;
+}
+
+.cw-icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: rgba(255, 255, 255, 0.85);
+    font-size: .95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.cw-icon-btn:hover { background: rgba(255, 255, 255, 0.22); }
+.cw-icon-btn.active { background: rgba(26, 111, 175, 0.5); }
+
+.cw-close {
+    font-size: .85rem;
+    font-style: normal;
+}
+
+/* ─── Messages ───────────────────────────────────────────────────────────── */
+.cw-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: .9rem;
+    background: #f8fafc;
+    scroll-behavior: smooth;
+}
+
+.cw-messages::-webkit-scrollbar { width: 4px; }
+.cw-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 2px; }
+
+/* Message row */
+.cw-msg {
+    display: flex;
+    align-items: flex-end;
+    gap: .55rem;
+    max-width: 100%;
+    animation: cwMsgIn .22s ease both;
+}
+
+@keyframes cwMsgIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.cw-msg--user {
+    flex-direction: row-reverse;
+}
+
+/* Avatars */
+.cw-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a6faf, #0d4f82);
+    color: #fff;
+    font-size: .85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: 700;
+}
+
+.cw-avatar--user {
+    background: linear-gradient(135deg, #374151, #1f2d3d);
+    font-size: .78rem;
+}
+
+/* Message body */
+.cw-msg__body {
+    display: flex;
+    flex-direction: column;
+    gap: .2rem;
+    max-width: 80%;
+}
+
+.cw-msg--user .cw-msg__body { align-items: flex-end; }
+
+/* Bubble */
+.cw-bubble {
+    padding: .65rem .9rem;
+    border-radius: 14px;
+    font-size: .875rem;
+    line-height: 1.55;
+    word-break: break-word;
+}
+
+.cw-bubble p { margin-bottom: .3rem; }
+.cw-bubble p:last-child { margin-bottom: 0; }
+
+.cw-msg--bot .cw-bubble {
+    background: #fff;
+    color: #1f2d3d;
+    border-bottom-left-radius: 4px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+
+.cw-msg--user .cw-bubble {
+    background: linear-gradient(135deg, #1a6faf, #0d4f82);
+    color: #fff;
+    border-bottom-right-radius: 4px;
+}
+
+/* Typing bubble */
+.cw-bubble--typing {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    min-width: 52px;
+    padding: .75rem 1rem;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    border-radius: 14px;
+    border-bottom-left-radius: 4px;
+}
+
+.cw-bubble--typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1a6faf;
+    animation: cwDot 1.4s infinite ease-in-out both;
+}
+.cw-bubble--typing span:nth-child(1) { animation-delay: -0.32s; }
+.cw-bubble--typing span:nth-child(2) { animation-delay: -0.16s; }
+
+@keyframes cwDot {
+    0%, 80%, 100% { transform: scale(0); opacity: .4; }
+    40%           { transform: scale(1); opacity: 1;   }
+}
+
+.cw-time {
+    font-size: .68rem;
+    color: #94a3b8;
+}
+
+/* ─── Quick questions ────────────────────────────────────────────────────── */
+.cw-quick-wrap {
+    margin-top: .25rem;
+    animation: cwMsgIn .3s .1s ease both;
+}
+
+.cw-quick-label {
+    font-size: .73rem;
+    color: #94a3b8;
+    margin-bottom: .5rem;
+    font-weight: 500;
+}
+
+.cw-quick-btns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .45rem;
+}
+
+.cw-quick-btn {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    color: #1a6faf;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .4rem .75rem;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all .2s;
+    white-space: nowrap;
+}
+
+.cw-quick-btn:hover {
+    background: #1a6faf;
+    border-color: #1a6faf;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* ─── Input area ─────────────────────────────────────────────────────────── */
+.cw-input-area {
+    padding: .75rem 1rem 1rem;
+    border-top: 1px solid #e2e8f0;
+    background: #fff;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
+}
+
+.cw-input-row {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.cw-input {
+    flex: 1;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 50px;
+    padding: .6rem 1rem;
+    font-size: .88rem;
+    outline: none;
+    background: #f8fafc;
+    transition: border-color .2s, box-shadow .2s;
+    color: #1f2d3d;
+}
+
+.cw-input:focus {
+    border-color: #1a6faf;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(26, 111, 175, .12);
+}
+
+.cw-input::placeholder { color: #94a3b8; }
+.cw-input:disabled { opacity: .6; cursor: not-allowed; }
+
+.cw-send-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1a6faf, #0d4f82);
+    color: #fff;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all .2s;
+}
+
+.cw-send-btn:hover:not(:disabled) {
+    transform: scale(1.08);
+    box-shadow: 0 6px 18px rgba(26, 111, 175, .4);
+}
+
+.cw-send-btn:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.cw-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: cwSpin .65s linear infinite;
+}
+
+@keyframes cwSpin { to { transform: rotate(360deg); } }
+
+.cw-footer-note {
+    font-size: .68rem;
+    color: #94a3b8;
+    text-align: center;
+}
+.cw-footer-note a { color: #1a6faf; text-decoration: none; }
+.cw-footer-note a:hover { text-decoration: underline; }
+
+/* sr-only */
+.sr-only {
+    position: absolute; width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ─── Backdrop (mobile) ──────────────────────────────────────────────────── */
+.cw-backdrop {
+    display: none;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .cw-panel {
+        bottom: 0;
+        right: 0;
+        left: 0;
+        width: 100%;
+        max-height: 90vh;
+        border-radius: 20px 20px 0 0;
+        transform-origin: bottom center;
+    }
+
+    .cw-fab {
+        bottom: 1.25rem;
+        right: 1.25rem;
+    }
+
+    .cw-backdrop {
+        display: block;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.4);
+        z-index: 998;
+        backdrop-filter: blur(2px);
+        animation: cwFadeIn .2s ease;
+    }
+
+    @keyframes cwFadeIn {
+        from { opacity: 0; }
+        to   { opacity: 1; }
+    }
+}

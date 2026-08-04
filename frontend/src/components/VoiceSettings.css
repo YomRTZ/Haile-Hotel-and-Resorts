@@ -1,0 +1,85 @@
+.voice-settings {
+    padding: 20px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    min-width: 300px;
+}
+
+.voice-settings h3 {
+    margin: 0 0 20px 0;
+    color: #2d1b69;
+    font-size: 18px;
+}
+
+.setting-group {
+    margin-bottom: 16px;
+}
+
+.setting-group label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    color: #333;
+}
+
+.setting-group label span:first-child {
+    min-width: 100px;
+}
+
+.setting-group input[type="range"] {
+    flex: 1;
+    accent-color: #764ba2;
+}
+
+.setting-group .value {
+    min-width: 40px;
+    text-align: center;
+    font-weight: 600;
+    color: #764ba2;
+}
+
+.setting-group select {
+    flex: 1;
+    padding: 6px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    outline: none;
+}
+
+.setting-group select:focus {
+    border-color: #764ba2;
+}
+
+.checkbox-label {
+    cursor: pointer;
+    gap: 8px !important;
+}
+
+.checkbox-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    accent-color: #764ba2;
+}
+
+.test-voice-btn {
+    width: 100%;
+    padding: 10px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 8px;
+}
+
+.test-voice-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(118, 75, 162, 0.4);
+}

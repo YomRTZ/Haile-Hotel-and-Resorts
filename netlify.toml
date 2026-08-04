@@ -1,0 +1,13 @@
+[build]
+  base    = "frontend"
+  command = "npm run build"
+  publish = "build"
+
+[build.environment]
+  CI                   = "false"
+  REACT_APP_HOTEL_NAME = "Haile Resort Hawassa"
+
+[[redirects]]
+  from   = "/*"
+  to     = "/index.html"
+  status = 200
