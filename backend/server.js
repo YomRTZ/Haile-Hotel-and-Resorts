@@ -30,7 +30,8 @@ app.use(cors({
         // Allow requests with no origin (mobile apps, curl, Render health checks)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
-        callback(new Error(`CORS: origin ${origin} not allowed`));
+        // Return 403 instead of throwing — prevents unhandled error logs
+        callback(null, false);
     },
     credentials: true,
 }));
