@@ -24,16 +24,22 @@ const limiter = rateLimit({
 });
 
 // Middleware
-const allowedOrigins = process.env.NODE_ENV === 'production'
-    ? (process.env.FRONTEND_URL || '').split(',').map(o => o.trim()).filter(Boolean)
-    : ['http://localhost:3000'];
+const allowedOrigins = [
+    'https://haileresort.netlify.app',
+    'http://localhost:3000',
+    ...(process.env.FRONTEND_URL
+        ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
+        : []),
+];
+
+console.log('✅ Allowed CORS origins:', allowedOrigins);
 
 app.use(cors({
     origin: (origin, callback) => {
-        // Allow requests with no origin (mobile apps, curl, Render health checks)
+        // Allow requests with no origin (curl, Render health checks, mobile apps)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
-        // Return 403 instead of throwing — prevents unhandled error logs
+        console.warn(`⚠️  CORS blocked: ${origin}`);
         callback(null, false);
     },
     credentials: true,
