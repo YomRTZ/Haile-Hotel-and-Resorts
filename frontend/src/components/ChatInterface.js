@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import VoiceControls from './VoiceControls';
+import LanguageToggle from './LanguageToggle';
 import useVoice from '../hooks/useVoice';
+import useAmharicVoice from '../hooks/useAmharicVoice';
+import { useLanguage } from '../context/LanguageContext';
 import { sendMessage, getChatHistory, clearChatHistory } from '../services/api';
 import './ChatInterface.css';
 
@@ -22,15 +25,24 @@ const ChatInterface = () => {
     const [autoSpeak, setAutoSpeak] = useState(true);
     const messagesEndRef = useRef(null);
 
-    // Voice hook for speaking responses aloud
-    const { speak, isSpeaking, stopSpeaking } = useVoice();
+    // Language context
+    const { language, t } = useLanguage();
+    const isAmharic = language === 'am';
+
+    // English voice hook (Web Speech API)
+    const enVoice = useVoice();
+    // Amharic voice hook (MediaRecorder + Groq Whisper + Google TTS)
+    const amVoice = useAmharicVoice();
+
+    // Pick the active voice hook based on language
+    const voice = isAmharic ? amVoice : enVoice;
 
     // Auto-scroll to latest message
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isLoading]);
 
-    // Load history on mount
+    // Load history / set welcome message when language changes
     useEffect(() => {
         const loadHistory = async () => {
             try {
@@ -38,21 +50,16 @@ const ChatInterface = () => {
                 if (data.messages && data.messages.length > 0) {
                     setMessages(data.messages);
                 } else {
-                    setMessages([{
-                        role: 'assistant',
-                        content: '👋 Welcome to Haile Resort Hawassa! How can I assist you today?'
-                    }]);
+                    setMessages([{ role: 'assistant', content: t.welcomeMessage }]);
                 }
             } catch (error) {
                 console.error('Failed to load history:', error);
-                setMessages([{
-                    role: 'assistant',
-                    content: '👋 Welcome to Haile Resort Hawassa! How can I assist you today?'
-                }]);
+                setMessages([{ role: 'assistant', content: t.welcomeMessage }]);
             }
         };
         loadHistory();
-    }, [sessionId]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sessionId, language]);
 
     // ============================================
     // SEND MESSAGE
@@ -66,20 +73,26 @@ const ChatInterface = () => {
         setIsLoading(true);
 
         try {
-            const data = await sendMessage(text, sessionId);
+            const data = await sendMessage(text, sessionId, language);
             const botResponse = data.response;
 
             setMessages(prev => [...prev, { role: 'assistant', content: botResponse }]);
 
             // Auto-speak response if enabled
             if (autoSpeak) {
-                speak(botResponse);
+                if (isAmharic) {
+                    // Use backend TTS for Amharic
+                    amVoice.speak(botResponse);
+                } else {
+                    // Use browser TTS for English
+                    enVoice.speak(botResponse);
+                }
             }
         } catch (error) {
             console.error('Failed to send message:', error);
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: 'Sorry, I had trouble processing your request. Please try again.'
+                content: t.errorMessage,
             }]);
         } finally {
             setIsLoading(false);
@@ -90,8 +103,8 @@ const ChatInterface = () => {
     // HANDLE VOICE INPUT
     // ============================================
     const handleVoiceTranscript = (transcript) => {
+        if (!transcript?.trim()) return;
         setInput(transcript);
-        // Auto-send after a short delay so the user can see what was transcribed
         setTimeout(() => handleSendMessage(transcript), 500);
     };
 
@@ -101,11 +114,8 @@ const ChatInterface = () => {
     const handleClearChat = async () => {
         try {
             await clearChatHistory(sessionId);
-            if (isSpeaking) stopSpeaking();
-            setMessages([{
-                role: 'assistant',
-                content: '👋 Chat cleared! How can I help you?'
-            }]);
+            if (voice.isSpeaking) voice.stopSpeaking();
+            setMessages([{ role: 'assistant', content: t.clearMessage }]);
         } catch (error) {
             console.error('Failed to clear chat:', error);
         }
@@ -119,24 +129,35 @@ const ChatInterface = () => {
             {/* Header */}
             <div className="chat-header">
                 <div className="header-content">
-                    <h1>🏨 Haile Resort Hawassa</h1>
-                    <p>Your AI Concierge</p>
+                    <h1>🏨 {isAmharic ? 'ሃይሌ ሪዞርት አዋሳ' : 'Haile Resort Hawassa'}</h1>
+                    <p>{isAmharic ? 'ምናባዊ ኮንሲርጅዎ' : 'Your AI Concierge'}</p>
                 </div>
                 <div className="controls">
-                    <VoiceControls onTranscript={handleVoiceTranscript} />
+                    {/* Language toggle */}
+                    <LanguageToggle />
+
+                    {/* Voice controls — switches automatically based on language */}
+                    <VoiceControls
+                        onTranscript={handleVoiceTranscript}
+                        language={language}
+                    />
+
+                    {/* Auto-speak toggle */}
                     <button
                         className="speak-toggle-btn"
                         onClick={() => setAutoSpeak(prev => !prev)}
-                        title={autoSpeak ? 'Auto-speak on (click to disable)' : 'Auto-speak off (click to enable)'}
-                        aria-label={autoSpeak ? 'Disable auto-speak' : 'Enable auto-speak'}
+                        title={autoSpeak ? t.speakToggleOn : t.speakToggleOff}
+                        aria-label={autoSpeak ? t.speakToggleOn : t.speakToggleOff}
                     >
                         {autoSpeak ? '🔊' : '🔇'}
                     </button>
+
+                    {/* Clear chat */}
                     <button
                         className="clear-btn"
                         onClick={handleClearChat}
-                        title="Clear chat history"
-                        aria-label="Clear chat"
+                        title={isAmharic ? 'ውይይቱን አጽዳ' : 'Clear chat history'}
+                        aria-label={isAmharic ? 'ውይይቱን አጽዳ' : 'Clear chat'}
                     >
                         🗑️
                     </button>
@@ -150,6 +171,7 @@ const ChatInterface = () => {
                         key={idx}
                         className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}
                         role="listitem"
+                        dir={isAmharic ? 'ltr' : 'ltr'} // Ethiopic script is LTR
                     >
                         <div className="message-content">
                             {msg.content.split('\n').map((line, i) => (
@@ -160,7 +182,7 @@ const ChatInterface = () => {
                 ))}
 
                 {isLoading && (
-                    <div className="message bot-message" aria-label="Loading response">
+                    <div className="message bot-message" aria-label={isAmharic ? 'ምላሽ በመጠበቅ ላይ...' : 'Loading response'}>
                         <div className="message-content">
                             <div className="typing-indicator">
                                 <span></span>
@@ -174,32 +196,43 @@ const ChatInterface = () => {
                 <div ref={messagesEndRef} />
             </div>
 
+            {/* Amharic transcription status */}
+            {isAmharic && amVoice.isTranscribing && (
+                <div className="transcribing-status" role="status" aria-live="polite">
+                    <span className="spinner">⏳</span>
+                    <span>ድምጽ እየተተረጎመ ነው...</span>
+                </div>
+            )}
+
             {/* Input */}
             <div className="chat-input-area">
                 <div className="input-wrapper">
-                    <label htmlFor="userInput" className="sr-only">Type your message</label>
+                    <label htmlFor="userInput" className="sr-only">
+                        {isAmharic ? 'መልዕክትዎን ይጻፉ' : 'Type your message'}
+                    </label>
                     <input
                         type="text"
                         id="userInput"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
-                        placeholder="Type your question or use voice..."
+                        placeholder={t.placeholder}
                         disabled={isLoading}
                         maxLength={1000}
                         autoComplete="off"
+                        lang={isAmharic ? 'am' : 'en'}
                     />
                     <button
                         className="send-btn"
                         onClick={() => handleSendMessage()}
                         disabled={isLoading || !input.trim()}
-                        aria-label="Send message"
+                        aria-label={isAmharic ? 'ላክ' : 'Send message'}
                     >
-                        {isLoading ? '⏳' : 'Send'}
+                        {isLoading ? '⏳' : t.sending}
                     </button>
                 </div>
                 <div className="input-hint">
-                    <span>💡 Try: "What rooms do you have?" or click 🎤 to speak</span>
+                    <span>{t.hint}</span>
                 </div>
             </div>
         </div>

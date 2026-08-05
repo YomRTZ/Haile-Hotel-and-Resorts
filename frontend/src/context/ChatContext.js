@@ -64,7 +64,12 @@ export function ChatProvider({ children }) {
       dispatch({ type: 'CLEAR_ERROR' });
 
       try {
-        const data = await sendChatMessage({ message: text.trim(), sessionId: sid, guestName });
+        const data = await sendChatMessage({
+          message: text.trim(),
+          sessionId: sid,
+          guestName,
+          language: (() => { try { return localStorage.getItem('haile_language') || 'en'; } catch { return 'en'; } })(),
+        });
 
         dispatch({
           type: 'ADD_MESSAGE',

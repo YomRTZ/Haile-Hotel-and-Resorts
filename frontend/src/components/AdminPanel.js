@@ -73,7 +73,7 @@ function SessionsTab() {
       try {
         const data = await getAllSessions();
         setSessions(data.sessions);
-        setTotal(data.total);
+        setTotal(data.sessions.length);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -86,7 +86,8 @@ function SessionsTab() {
     setSelected(sessionId);
     try {
       const data = await getSessionDetail(sessionId);
-      setDetail(data);
+      // backend returns { success, session: { sessionId, messages, userInfo, ... } }
+      setDetail(data.session || data);
     } catch (err) {
       setError(err.message);
     }
@@ -110,9 +111,12 @@ function SessionsTab() {
               tabIndex={0}
               onKeyDown={(e) => e.key === 'Enter' && handleSelect(s.sessionId)}
             >
-              <strong>{s.guestName}</strong>
+              <strong>{s.userInfo?.name || 'Guest'}</strong>
               <span className="session-date">
                 {new Date(s.updatedAt).toLocaleDateString()}
+              </span>
+              <span className="session-count">
+                {s.metadata?.totalMessages ?? 0} msgs
               </span>
             </li>
           ))}
@@ -122,12 +126,12 @@ function SessionsTab() {
         {/* Session detail */}
         {detail && (
           <div className="session-detail">
-            <h4>Session: {detail.guestName}</h4>
+            <h4>Session: {detail.userInfo?.name || 'Guest'}</h4>
             <p className="session-meta">
-              {new Date(detail.createdAt).toLocaleString()} · {detail.messages.length} messages
+              {new Date(detail.createdAt).toLocaleString()} · {detail.messages?.length ?? 0} messages
             </p>
             <div className="session-messages">
-              {detail.messages.map((m, i) => (
+              {(detail.messages || []).map((m, i) => (
                 <div key={i} className={`session-msg session-msg--${m.role}`}>
                   <strong>{m.role === 'user' ? '👤' : '🏨'}</strong> {m.content}
                 </div>

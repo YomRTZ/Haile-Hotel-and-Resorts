@@ -57,7 +57,7 @@ chatSessionSchema.pre('save', function (next) {
 });
 
 // Indexes for faster queries
-chatSessionSchema.index({ sessionId: 1 });
+// Note: sessionId is already indexed via unique:true on the field definition
 chatSessionSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model('ChatSession', chatSessionSchema);

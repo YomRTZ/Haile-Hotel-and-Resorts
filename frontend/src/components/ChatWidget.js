@@ -3,6 +3,8 @@ import { useAuth } from '../context/AuthContext';
 import { sendMessage, getChatHistory, clearChatHistory } from '../services/api';
 import useVoice from '../hooks/useVoice';
 import VoiceControls from './VoiceControls';
+import LanguageToggle from './LanguageToggle';
+import { useLanguage } from '../context/LanguageContext';
 import './ChatWidget.css';
 
 // Stable session ID per browser
@@ -15,13 +17,22 @@ const getSessionId = () => {
     return sid;
 };
 
-const QUICK_QUESTIONS = [
+const QUICK_QUESTIONS_EN = [
     '🛏️ Room types & prices',
     '🕐 Check-in / check-out',
     '🏊 Pool & spa info',
     '🍽️ Dining options',
     '🐾 Pet policy',
     '🚗 Parking',
+];
+
+const QUICK_QUESTIONS_AM = [
+    '🛏️ ክፍሎችና ዋጋዎች',
+    '🕐 ቼክ-ኢን / ቼክ-አውት',
+    '🏊 ገንዳ እና ስፓ',
+    '🍽️ ምግብ ቤቶች',
+    '🐾 የቤት እንስሳ ፖሊሲ',
+    '🚗 ፓርኪንግ',
 ];
 
 function TypingDots() {
@@ -37,6 +48,9 @@ function TypingDots() {
 
 export default function ChatWidget({ isOpen, onToggle }) {
     const { user } = useAuth();
+    const { language, t } = useLanguage();
+    const isAmharic = language === 'am';
+
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
     const [loading, setLoading] = useState(false);
@@ -47,6 +61,24 @@ export default function ChatWidget({ isOpen, onToggle }) {
     const inputRef = useRef(null);
 
     const { speak, isSpeaking, stopSpeaking } = useVoice();
+
+    const welcomeMessage = isAmharic
+        ? `👋 እንኳን ወደ ሃይሌ ሪዞርት አዋሳ በደህና መጡ${user ? '፣ ' + user.name.split(' ')[0] : ''}! እንዴት ልረዳዎ እችላለሁ?`
+        : `👋 Welcome${user ? ', ' + user.name.split(' ')[0] : ''}! I'm your Haile Resort Hawassa concierge. How can I help you today?`;
+
+    const QUICK_QUESTIONS = isAmharic ? QUICK_QUESTIONS_AM : QUICK_QUESTIONS_EN;
+
+    // Reset messages and reload when language changes
+    useEffect(() => {
+        setMessages([{
+            role: 'assistant',
+            content: isAmharic
+                ? `👋 እንኳን ወደ ሃይሌ ሪዞርት አዋሳ በደህና መጡ${user ? '፣ ' + user.name.split(' ')[0] : ''}! እንዴት ልረዳዎ እችላለሁ?`
+                : `👋 Welcome${user ? ', ' + user.name.split(' ')[0] : ''}! I'm your Haile Resort Hawassa concierge. How can I help you today?`,
+            timestamp: new Date().toISOString(),
+        }]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [language]);
 
     // Load history on first open
     useEffect(() => {
@@ -60,18 +92,10 @@ export default function ChatWidget({ isOpen, onToggle }) {
                 if (data.messages?.length > 0) {
                     setMessages(data.messages);
                 } else {
-                    setMessages([{
-                        role: 'assistant',
-                        content: `👋 Welcome${user ? ', ' + user.name.split(' ')[0] : ''}! I'm your Haile Resort Hawassa concierge. How can I help you today?`,
-                        timestamp: new Date().toISOString(),
-                    }]);
+                    setMessages([{ role: 'assistant', content: welcomeMessage, timestamp: new Date().toISOString() }]);
                 }
             } catch {
-                setMessages([{
-                    role: 'assistant',
-                    content: '👋 Welcome to Haile Resort Hawassa! Ask me anything about rooms, amenities, dining, or policies.',
-                    timestamp: new Date().toISOString(),
-                }]);
+                setMessages([{ role: 'assistant', content: welcomeMessage, timestamp: new Date().toISOString() }]);
             }
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -102,7 +126,7 @@ export default function ChatWidget({ isOpen, onToggle }) {
         setLoading(true);
 
         try {
-            const data = await sendMessage(msg, sessionId);
+            const data = await sendMessage(msg, sessionId, language);
             const reply = data.response;
 
             setMessages(prev => [...prev, {
@@ -116,7 +140,9 @@ export default function ChatWidget({ isOpen, onToggle }) {
         } catch (err) {
             setMessages(prev => [...prev, {
                 role: 'assistant',
-                content: '⚠️ Sorry, I couldn\'t process that. Please try again.',
+                content: isAmharic
+                    ? '⚠️ ይቅርታ፣ ጥያቄዎን ማስኬድ አልተቻለም። እባክዎ እንደገና ይሞክሩ።'
+                    : '⚠️ Sorry, I couldn\'t process that. Please try again.',
                 timestamp: new Date().toISOString(),
             }]);
         } finally {
@@ -131,7 +157,9 @@ export default function ChatWidget({ isOpen, onToggle }) {
         if (isSpeaking) stopSpeaking();
         setMessages([{
             role: 'assistant',
-            content: '🔄 Chat cleared! How can I help you?',
+            content: isAmharic
+                ? '🔄 ውይይቱ ተጸድቷል! እንዴት ልረዳዎ እችላለሁ?'
+                : '🔄 Chat cleared! How can I help you?',
             timestamp: new Date().toISOString(),
         }]);
     };
@@ -144,6 +172,10 @@ export default function ChatWidget({ isOpen, onToggle }) {
     const formatTime = (ts) => ts
         ? new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         : '';
+
+    // Quick questions — send the label text directly (Amharic or English)
+    // Strip only the leading emoji+space before sending
+    const sendQuickQuestion = (q) => handleSend(q.replace(/^[\p{Emoji}\u200d]+\s*/u, ''));
 
     return (
         <>
@@ -169,22 +201,25 @@ export default function ChatWidget({ isOpen, onToggle }) {
                     <div className="cw-header__left">
                         <div className="cw-header__avatar">🏨</div>
                         <div>
-                            <strong>Haile Resort Concierge</strong>
+                            <strong>{isAmharic ? 'ሃይሌ ሪዞርት ኮንሲርጅ' : 'Haile Resort Concierge'}</strong>
                             <span>
                                 <span className="cw-status-dot" />
-                                Online · AI-powered
+                                {isAmharic ? 'በመስመር ላይ · AI-powered' : 'Online · AI-powered'}
                             </span>
                         </div>
                     </div>
                     <div className="cw-header__actions">
+                        {/* Language toggle */}
+                        <LanguageToggle />
+
                         <button
                             className={`cw-icon-btn ${autoSpeak ? 'active' : ''}`}
                             onClick={() => { setAutoSpeak(p => !p); if (isSpeaking) stopSpeaking(); }}
-                            title={autoSpeak ? 'Auto-speak on' : 'Auto-speak off'}
+                            title={autoSpeak ? t.speakToggleOn : t.speakToggleOff}
                         >
                             {autoSpeak ? '🔊' : '🔇'}
                         </button>
-                        <button className="cw-icon-btn" onClick={handleClear} title="Clear chat">
+                        <button className="cw-icon-btn" onClick={handleClear} title={isAmharic ? 'ውይይቱን አጽዳ' : 'Clear chat'}>
                             🗑️
                         </button>
                         <button className="cw-icon-btn cw-close" onClick={onToggle} aria-label="Close">
@@ -225,13 +260,15 @@ export default function ChatWidget({ isOpen, onToggle }) {
                     {/* Quick questions — only show at the start */}
                     {messages.length === 1 && !loading && (
                         <div className="cw-quick-wrap">
-                            <p className="cw-quick-label">Quick questions:</p>
+                            <p className="cw-quick-label">
+                                {isAmharic ? 'ፈጣን ጥያቄዎች:' : 'Quick questions:'}
+                            </p>
                             <div className="cw-quick-btns">
                                 {QUICK_QUESTIONS.map((q) => (
                                     <button
                                         key={q}
                                         className="cw-quick-btn"
-                                        onClick={() => handleSend(q.replace(/^[\w\W]{2}\s/, ''))}
+                                        onClick={() => sendQuickQuestion(q)}
                                     >
                                         {q}
                                     </button>
@@ -251,10 +288,13 @@ export default function ChatWidget({ isOpen, onToggle }) {
                         showSuggestions={false}
                         autoSend={false}
                         compact={true}
+                        language={language}
                     />
 
                     <div className="cw-input-row">
-                        <label htmlFor="cw-input" className="sr-only">Type your message</label>
+                        <label htmlFor="cw-input" className="sr-only">
+                            {isAmharic ? 'መልዕክትዎን ይጻፉ' : 'Type your message'}
+                        </label>
                         <input
                             id="cw-input"
                             ref={inputRef}
@@ -263,23 +303,27 @@ export default function ChatWidget({ isOpen, onToggle }) {
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && handleSend()}
-                            placeholder="Ask me anything…"
+                            placeholder={isAmharic ? 'ጥያቄዎን ይጻፉ...' : 'Ask me anything…'}
                             disabled={loading}
                             maxLength={1000}
                             autoComplete="off"
+                            lang={isAmharic ? 'am' : 'en'}
                         />
                         <button
                             className="cw-send-btn"
                             onClick={() => handleSend()}
                             disabled={loading || !input.trim()}
-                            aria-label="Send"
+                            aria-label={isAmharic ? 'ላክ' : 'Send'}
                         >
                             {loading ? <span className="cw-spinner" /> : '➤'}
                         </button>
                     </div>
 
                     <p className="cw-footer-note">
-                        Powered by Haile Resort AI · <a href="#contact">Contact us</a>
+                        {isAmharic
+                            ? 'በሃይሌ ሪዞርት AI የሚሰራ'
+                            : <>Powered by Haile Resort AI · <a href="#contact">Contact us</a></>
+                        }
                     </p>
                 </div>
             </div>

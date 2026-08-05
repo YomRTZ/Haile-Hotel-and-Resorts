@@ -5,6 +5,7 @@ const rateLimit = require('express-rate-limit');
 const connectDB = require('./config/db');
 const chatRoutes = require('./routes/chatRoutes');
 const authRoutes = require('./routes/authRoutes');
+const voiceRoutes = require('./routes/voiceRoutes');
 
 dotenv.config();
 
@@ -28,7 +29,9 @@ const allowedOrigins = [
     'https://haileresort.netlify.app',
     'http://localhost:3000',
     ...(process.env.FRONTEND_URL
-        ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
+        ? process.env.FRONTEND_URL.split(',')
+            .map(o => o.trim())
+            .filter(o => o && o !== 'https://haileresort.netlify.app' && o !== 'http://localhost:3000')
         : []),
 ];
 
@@ -50,6 +53,7 @@ app.use('/api/', limiter);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/voice', voiceRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

@@ -27,17 +27,25 @@ api.interceptors.response.use(
 );
 
 // ─── Chat (used by ChatWidget directly) ──────────────────────────────────────
-export const sendMessage      = async (message, sessionId) => (await api.post('/chat/send', { message, sessionId })).data;
+export const sendMessage      = async (message, sessionId, language = 'en') =>
+    (await api.post('/chat/send', { message, sessionId, language })).data;
 export const getChatHistory   = async (sessionId) => (await api.get(`/chat/history/${sessionId}`)).data;
 export const clearChatHistory = async (sessionId) => (await api.post('/chat/clear', { sessionId })).data;
 
 // ─── Chat (used by ChatContext) ───────────────────────────────────────────────
 // Alias that accepts an object and maps response -> reply for ChatContext compatibility
-export const sendChatMessage  = async ({ message, sessionId, guestName }) => {
-    const data = (await api.post('/chat/send', { message, sessionId, guestName })).data;
+export const sendChatMessage  = async ({ message, sessionId, guestName, language = 'en' }) => {
+    const data = (await api.post('/chat/send', { message, sessionId, guestName, language })).data;
     // Normalise: backend returns `response`, ChatContext expects `reply`
     return { ...data, reply: data.response };
 };
+
+// ─── Voice ────────────────────────────────────────────────────────────────────
+// NOTE: transcribeAudio uses FormData (multipart), so we call fetch directly
+// in amharicVoiceService to avoid axios Content-Type conflicts.
+// synthesizeSpeech is kept here for optional direct use.
+export const synthesizeSpeech = async (text, language = 'am') =>
+    (await api.post('/voice/tts', { text, language }, { responseType: 'arraybuffer' })).data;
 export const clearChatSession = async (sessionId) => (await api.post('/chat/clear', { sessionId })).data;
 
 // ─── Admin ────────────────────────────────────────────────────────────────────

@@ -12,5 +12,6 @@ router.get('/hotel-data', chatController.getHotelData);
 router.put('/hotel-data', chatController.updateHotelData);
 router.get('/sessions', chatController.getAllSessions);
 router.get('/sessions/:sessionId', chatController.getSessionDetail);
+router.post('/clear-all-sessions', chatController.clearAllSessions);
 
 module.exports = router;
