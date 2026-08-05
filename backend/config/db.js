@@ -1,26 +1,41 @@
 const mongoose = require('mongoose');
 
-let isConnected = false;
-
 const connectDB = async () => {
+    const uri = process.env.MONGO_URI;
+
+    if (!uri) {
+        console.error('❌ MONGO_URI is not set. Add it to your .env file.');
+        // Don't crash — fall through to in-memory fallback mode
+        return;
+    }
+
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI, {
-            serverSelectionTimeoutMS: 5000,  // fail fast — don't block startup
-            socketTimeoutMS: 10000,
+        const conn = await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 8000,
+            socketTimeoutMS: 30000,
+            // Atlas recommends these for production
+            maxPoolSize: 10,
+            retryWrites: true,
         });
-        isConnected = true;
-        console.log(`✅ MongoDB connected: ${conn.connection.host}`);
-    } catch (error) {
-        console.error('⚠️  MongoDB connection failed:', error.message);
-        console.warn('   Running without database — chat history will not be persisted.');
-        // Do NOT call process.exit — the chatbot works fine without MongoDB
-        // (keyword lookups and templates need no DB)
+
+        const host = conn.connection.host;
+        const db   = conn.connection.name;
+        const isAtlas = host.includes('mongodb.net');
+
+        console.log(`✅ MongoDB connected: ${isAtlas ? '☁️  Atlas' : '🏠 Local'} — ${host} / ${db}`);
+    } catch (err) {
+        console.error('⚠️  MongoDB connection failed:', err.message);
+        if (!uri.includes('mongodb.net')) {
+            console.warn('   Local: make sure mongod is running.');
+        } else {
+            console.warn('   Atlas: check your MONGO_URI, network access, and IP whitelist.');
+        }
+        console.warn('   Running without DB — chat history will not be persisted.');
+        // Do NOT exit — keyword responses work without MongoDB
     }
 };
 
-/** Returns true if mongoose is currently connected */
-const isDBConnected = () =>
-    mongoose.connection.readyState === 1;
+const isDBConnected = () => mongoose.connection.readyState === 1;
 
 module.exports = connectDB;
 module.exports.isDBConnected = isDBConnected;

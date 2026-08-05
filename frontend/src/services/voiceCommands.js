@@ -138,4 +138,5 @@ class VoiceCommands {
     }
 }
 
-export default new VoiceCommands();
+const voiceCommands = new VoiceCommands();
+export default voiceCommands;

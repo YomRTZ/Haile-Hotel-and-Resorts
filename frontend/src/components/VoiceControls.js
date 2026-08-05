@@ -57,7 +57,7 @@ const VoiceControls = ({
         clearError,
     } = voice;
 
-    const isTranscribing = isAmharic ? amVoice.isTranscribing : false;
+    const isTranscribing = false; // Web Speech API is real-time — no transcription delay
 
     // ── Handle final transcript (English: check for commands first) ────────
     useEffect(() => {
@@ -91,9 +91,8 @@ const VoiceControls = ({
     const toggleListening = async () => {
         if (isAmharic) {
             if (isListening) {
-                // Stop and transcribe
+                amVoice.stopListening();
                 onStopListening();
-                await amVoice.stopListening();
             } else {
                 onStartListening();
                 await amVoice.startListening();

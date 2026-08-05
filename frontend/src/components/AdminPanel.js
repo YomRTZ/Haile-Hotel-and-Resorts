@@ -101,7 +101,7 @@ function SessionsTab() {
       <h3>Chat Sessions ({total} total)</h3>
       <div className="sessions-layout">
         {/* Session list */}
-        <ul className="session-list" role="list">
+        <ul className="session-list">
           {sessions.map((s) => (
             <li
               key={s.sessionId}

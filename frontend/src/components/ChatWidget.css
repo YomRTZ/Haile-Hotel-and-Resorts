@@ -77,7 +77,9 @@
     right: 2rem;
     z-index: 999;
     width: 400px;
-    max-height: 640px;
+    /* Fixed height so the messages area always has room — capped at viewport */
+    height: 620px;
+    max-height: calc(100vh - 64px - 6.5rem);
     border-radius: 20px;
     background: #fff;
     box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18), 0 4px 16px rgba(0, 0, 0, 0.08);
@@ -99,16 +101,29 @@
 
 /* ─── Header ─────────────────────────────────────────────────────────────── */
 .cw-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.1rem;
+    padding: .75rem 1.1rem .9rem;
     background: linear-gradient(135deg, #0d1b2e 0%, #1a3a5c 100%);
     color: #fff;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: .55rem;
 }
 
-.cw-header__left {
+/* Top row — actions flush to the right */
+.cw-header__top {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.cw-header__actions {
+    display: flex;
+    gap: .3rem;
+    align-items: center;
+}
+
+/* Bottom row — avatar + title/status */
+.cw-header__bottom {
     display: flex;
     align-items: center;
     gap: .7rem;
@@ -127,13 +142,13 @@
     flex-shrink: 0;
 }
 
-.cw-header__left strong {
+.cw-header__bottom strong {
     font-size: .93rem;
     font-weight: 700;
     display: block;
 }
 
-.cw-header__left span {
+.cw-header__bottom span {
     font-size: .75rem;
     opacity: .75;
     display: flex;
@@ -154,11 +169,6 @@
 @keyframes cwPulse {
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.4; }
-}
-
-.cw-header__actions {
-    display: flex;
-    gap: .3rem;
 }
 
 .cw-icon-btn {
@@ -439,15 +449,28 @@
     display: none;
 }
 
+/* ─── Small desktop / short-viewport fix ────────────────────────────────── */
+@media (max-height: 700px) and (min-width: 481px) {
+    .cw-panel {
+        top: 68px;
+        bottom: 5.5rem;
+        height: auto;
+        max-height: none;
+        border-radius: 16px;
+    }
+}
+
 /* ─── Responsive ─────────────────────────────────────────────────────────── */
 @media (max-width: 480px) {
     .cw-panel {
+        top: 0;
         bottom: 0;
         right: 0;
         left: 0;
         width: 100%;
-        max-height: 90vh;
-        border-radius: 20px 20px 0 0;
+        max-height: none;
+        height: 100%;
+        border-radius: 0;
         transform-origin: bottom center;
     }
 

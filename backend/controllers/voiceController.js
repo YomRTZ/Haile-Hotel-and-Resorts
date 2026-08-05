@@ -49,7 +49,23 @@ exports.transcribeAudio = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('transcribeAudio error:', error?.message || error);
+        const msg = error?.message || String(error);
+        console.error('transcribeAudio error:', msg);
+
+        // Surface actionable errors to the client
+        if (msg.includes('429') || msg.toLowerCase().includes('credit')) {
+            return res.status(402).json({
+                success: false,
+                error: 'OpenAI account has no credits. Add credits at platform.openai.com/settings/billing',
+            });
+        }
+        if (msg.includes('401') || msg.toLowerCase().includes('invalid api key')) {
+            return res.status(401).json({
+                success: false,
+                error: 'Invalid OpenAI API key. Check OPENAI_API_KEY in backend .env',
+            });
+        }
+
         return res.status(500).json({
             success: false,
             error: 'Failed to transcribe audio. Please try again.',

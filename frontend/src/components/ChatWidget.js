@@ -198,7 +198,28 @@ export default function ChatWidget({ isOpen, onToggle }) {
             <div className={`cw-panel ${isOpen ? 'cw-panel--open' : ''}`} role="dialog" aria-label="AI Concierge">
                 {/* Header */}
                 <div className="cw-header">
-                    <div className="cw-header__left">
+                    {/* Top row: actions pinned to the right */}
+                    <div className="cw-header__top">
+                        <div className="cw-header__actions">
+                            <LanguageToggle />
+                            <button
+                                className={`cw-icon-btn ${autoSpeak ? 'active' : ''}`}
+                                onClick={() => { setAutoSpeak(p => !p); if (isSpeaking) stopSpeaking(); }}
+                                title={autoSpeak ? t.speakToggleOn : t.speakToggleOff}
+                            >
+                                {autoSpeak ? '🔊' : '🔇'}
+                            </button>
+                            <button className="cw-icon-btn" onClick={handleClear} title={isAmharic ? 'ውይይቱን አጽዳ' : 'Clear chat'}>
+                                🗑️
+                            </button>
+                            <button className="cw-icon-btn cw-close" onClick={onToggle} aria-label="Close">
+                                ✕
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Bottom row: avatar + title + status */}
+                    <div className="cw-header__bottom">
                         <div className="cw-header__avatar">🏨</div>
                         <div>
                             <strong>{isAmharic ? 'ሃይሌ ሪዞርት ኮንሲርጅ' : 'Haile Resort Concierge'}</strong>
@@ -207,24 +228,6 @@ export default function ChatWidget({ isOpen, onToggle }) {
                                 {isAmharic ? 'በመስመር ላይ · AI-powered' : 'Online · AI-powered'}
                             </span>
                         </div>
-                    </div>
-                    <div className="cw-header__actions">
-                        {/* Language toggle */}
-                        <LanguageToggle />
-
-                        <button
-                            className={`cw-icon-btn ${autoSpeak ? 'active' : ''}`}
-                            onClick={() => { setAutoSpeak(p => !p); if (isSpeaking) stopSpeaking(); }}
-                            title={autoSpeak ? t.speakToggleOn : t.speakToggleOff}
-                        >
-                            {autoSpeak ? '🔊' : '🔇'}
-                        </button>
-                        <button className="cw-icon-btn" onClick={handleClear} title={isAmharic ? 'ውይይቱን አጽዳ' : 'Clear chat'}>
-                            🗑️
-                        </button>
-                        <button className="cw-icon-btn cw-close" onClick={onToggle} aria-label="Close">
-                            ✕
-                        </button>
                     </div>
                 </div>
 

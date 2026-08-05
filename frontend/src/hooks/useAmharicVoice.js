@@ -3,47 +3,67 @@ import amharicVoiceService from '../services/amharicVoiceService';
 
 // ============================================================================
 // useAmharicVoice
-// Mirrors the shape of useVoice so components can swap it in seamlessly.
-// STT: MediaRecorder → OpenAI Whisper via backend
-// TTS: backend → Google Translate TTS audio
+//
+// STT : Web Speech API  lang='am-ET'  (free, Chrome/Edge)
+// TTS : backend Google Translate TTS  (free, no API key)
+//
+// Mirrors the shape of useVoice so VoiceControls can swap it in seamlessly.
 // ============================================================================
 
 const useAmharicVoice = () => {
-    const [isListening, setIsListening] = useState(false);
-    const [isTranscribing, setIsTranscribing] = useState(false); // waiting for Whisper
-    const [isSpeaking, setIsSpeaking] = useState(false);
-    const [transcript, setTranscript] = useState('');
-    const [error, setError] = useState(null);
-    const isSupported = amharicVoiceService.isSupported();
+    const [isListening,    setIsListening]    = useState(false);
+    const [isSpeaking,     setIsSpeaking]     = useState(false);
+    const [transcript,     setTranscript]     = useState('');
+    const [interimTranscript, setInterim]     = useState('');
+    const [volume,         setVolume]         = useState(0);
+    const [error,          setError]          = useState(null);
+    const [isSupported,    setIsSupported]    = useState(false);
 
-    // ── Start recording ──────────────────────────────────────────────────────
+    // Check support in the browser (not at module load / SSR)
+    useEffect(() => {
+        setIsSupported(amharicVoiceService.isSupported());
+    }, []);
+
+    // ── Start listening ──────────────────────────────────────────────────────
     const startListening = useCallback(async () => {
-        if (isListening || isTranscribing) return;
+        if (isListening) return;
         setError(null);
         setTranscript('');
+        setInterim('');
 
-        await amharicVoiceService.startRecording(
-            () => setIsListening(true),          // onStart
-            (msg) => { setError(msg); setIsListening(false); }, // onError
-            () => setIsListening(false),         // onEnd (before transcription)
-        );
-    }, [isListening, isTranscribing]);
-
-    // ── Stop recording + transcribe ──────────────────────────────────────────
-    const stopListening = useCallback(async () => {
-        if (!isListening) return;
-        setIsListening(false);
-        setIsTranscribing(true);
-        try {
-            const { transcript: text } = await amharicVoiceService.stopRecording();
-            setTranscript(text);
-        } catch (err) {
-            setError('የድምጽ ግቤቱን ማስኬድ አልተቻለም። እባክዎ እንደገና ይሞክሩ።');
-            console.error('Whisper transcription error:', err.message);
-        } finally {
-            setIsTranscribing(false);
-        }
+        amharicVoiceService.startListening({
+            onStart: () => {
+                setIsListening(true);
+                setVolume(0.5);
+            },
+            onInterim: (text) => {
+                setInterim(text);
+                setVolume(0.4 + Math.random() * 0.5);
+            },
+            onResult: (text) => {
+                setTranscript(text);
+                setInterim('');
+                setIsListening(false);
+                setVolume(0);
+            },
+            onError: (msg) => {
+                setError(msg);
+                setIsListening(false);
+                setVolume(0);
+            },
+            onEnd: () => {
+                setIsListening(false);
+                setVolume(0);
+            },
+        });
     }, [isListening]);
+
+    // ── Stop listening ───────────────────────────────────────────────────────
+    const stopListening = useCallback(() => {
+        amharicVoiceService.stopListening();
+        setIsListening(false);
+        setVolume(0);
+    }, []);
 
     // ── TTS speak ────────────────────────────────────────────────────────────
     const speak = useCallback(async (text, options = {}) => {
@@ -51,7 +71,7 @@ const useAmharicVoice = () => {
         setIsSpeaking(true);
         await amharicVoiceService.speak(text, 'am', {
             onStart: () => setIsSpeaking(true),
-            onEnd: () => { setIsSpeaking(false); if (options.onEnd) options.onEnd(); },
+            onEnd:   () => { setIsSpeaking(false); if (options.onEnd) options.onEnd(); },
             onError: (msg) => { setIsSpeaking(false); console.error('TTS:', msg); },
         });
     }, []);
@@ -65,19 +85,18 @@ const useAmharicVoice = () => {
     // ── Cleanup on unmount ───────────────────────────────────────────────────
     useEffect(() => {
         return () => {
-            if (isListening) amharicVoiceService.mediaRecorder?.stop();
+            amharicVoiceService.stopListening();
             amharicVoiceService.stopSpeaking();
         };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return {
         isListening,
-        isTranscribing, // extra: show spinner while Whisper processes
+        isTranscribing: false,   // Web Speech API is real-time — no separate transcription step
         isSpeaking,
         transcript,
-        interimTranscript: isListening ? '...' : '', // no real-time for Whisper
-        volume: isListening ? 0.6 : 0,
+        interimTranscript,
+        volume,
         error,
         isSupported,
         startListening,
