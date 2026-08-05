@@ -196,11 +196,11 @@ const ChatInterface = () => {
                 <div ref={messagesEndRef} />
             </div>
 
-            {/* Amharic transcription status */}
-            {isAmharic && amVoice.isTranscribing && (
+            {/* Amharic recording indicator */}
+            {isAmharic && amVoice.isListening && (
                 <div className="transcribing-status" role="status" aria-live="polite">
-                    <span className="spinner">⏳</span>
-                    <span>ድምጽ እየተተረጎመ ነው...</span>
+                    <span className="spinner">🎙️</span>
+                    <span>ድምጽ እየተቀረጸ ነው...</span>
                 </div>
             )}
 

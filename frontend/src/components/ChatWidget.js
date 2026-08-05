@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { sendMessage, getChatHistory, clearChatHistory } from '../services/api';
 import useVoice from '../hooks/useVoice';
+import useAmharicVoice from '../hooks/useAmharicVoice';
 import VoiceControls from './VoiceControls';
 import LanguageToggle from './LanguageToggle';
 import { useLanguage } from '../context/LanguageContext';
@@ -60,7 +61,11 @@ export default function ChatWidget({ isOpen, onToggle }) {
     const bottomRef = useRef(null);
     const inputRef = useRef(null);
 
-    const { speak, isSpeaking, stopSpeaking } = useVoice();
+    const enVoice = useVoice();
+    const amVoice = useAmharicVoice();
+
+    // Pick the right speak/stop based on current language
+    const { speak, isSpeaking, stopSpeaking } = isAmharic ? amVoice : enVoice;
 
     const welcomeMessage = isAmharic
         ? `👋 እንኳን ወደ ሃይሌ ሪዞርት አዋሳ በደህና መጡ${user ? '፣ ' + user.name.split(' ')[0] : ''}! እንዴት ልረዳዎ እችላለሁ?`
